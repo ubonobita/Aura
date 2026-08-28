@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AURA — Discord Security Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-grid"></div><div class="blob b1"></div><div class="blob b2"></div>
+<div class="layout">
+<aside class="side" id="side">
+  <div class="brand"><img src="logo.png"><div><b>AURA</b><small>SECURITY BOT</small></div></div>
+  <div class="label">CONTROL CENTER</div>
+  <nav id="nav"></nav>
+  <div class="label">SYSTEM</div>
+  <button class="nav" onclick="showToast()">🔔 <span>Notifications</span><i class="dot"></i></button>
+  <button class="nav" onclick="page('Settings')">⚙️ <span>Settings</span></button>
+  <div class="dev-mini"><img src="photo.jpg"><div><b>Nobita</b><small>Developer</small></div></div>
+</aside>
+<main class="main">
+<header class="top"><div style="display:flex;align-items:center"><button class="icon mobile" onclick="toggleSide()">☰</button><div class="crumb">Dashboard　›　<b id="crumb">Overview</b></div></div><div class="top-right"><button class="icon" onclick="showToast()">🔔</button><button class="profile"><img src="photo.jpg"><span><b>Nobita</b><small>Developer</small></span></button></div></header>
+<div id="app" class="content"></div>
+</main></div>
+<div id="toast" style="position:fixed;right:20px;top:80px;z-index:50;display:none;padding:12px 15px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(12,17,28,.92);backdrop-filter:blur(20px);font-size:10px;box-shadow:0 15px 45px #0008">✓ You're all caught up.</div>
+<script>
+const logo=`logo.png`, photo=`photo.jpg`;
+const navItems=['Overview','Security','Automod','Verification','Moderation','Commands'];
+const commands={
+ Security:['antinuke','whitelist','multiwhitelist','extraowner','antiraid','arsetup'],
+ Automod:['automod','amsetup','amwhitelist','amchannelwl','amrolewl','amfilter','amhistory'],
+ Verification:['verification setup','verification status','verification disable'],
+ Moderation:['ban','kick','mute','unban','purge','role','hide','lock','unlock','unmute','nickname'],
+ Commands:['help','ping','uptime','stats','userinfo','serverinfo','avatar','banner','prefix','report','invite'],
+ Premium:['autorole','antialt','massrole','setserveravatar','resetserveravatar']
+};
+let current='Overview';
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function page(p){current=p;document.getElementById('crumb').textContent=p;renderNav();render();document.getElementById('side').classList.remove('open')}
+function renderNav(){document.getElementById('nav').innerHTML=navItems.map(x=>`<button class="nav ${current===x?'active':''}" onclick="page('${x}')"><span>${({Overview:'◈',Security:'🛡',Automod:'◉',Verification:'🔒',Moderation:'⚔',Commands:'⌘'})[x]}</span><span>${x}</span>${current===x?'<span class="chev">›</span>':''}</button>`).join('')}
+function stat(icon,label,value,note){return `<div class="card stat"><div class="sicon">${icon}</div><div><div class="muted">${label}</div><strong>${value}</strong><span class="note">${note}</span></div></div>`}
+function overview(){
+return `<div class="page">
+<section class="hero"><div><div class="eyebrow live"><i></i> ALL SYSTEMS OPERATIONAL</div><h1>Welcome to <span class="grad">AURA</span>.</h1><p>Your command center for a safer, faster and smarter Discord server.</p><div class="actions"><button class="primary" onclick="page('Security')">🛡 Configure Security　↗</button><button class="secondary" onclick="page('Commands')">⌘ Explore Commands</button></div></div><div class="orbit"><div class="ring"></div><div class="ring r2"></div><div class="core"><img src="${logo}"></div></div></section>
+<div class="stats">${stat('🤖','Bot Status','Online','All shards healthy')}${stat('◈','Servers','13','+3 this month')}${stat('◌','Uptime','99.98%','Last 30 days')}${stat('⚡','Latency','42 ms','Excellent')}</div>
+<div class="head"><div><div class="eyebrow">YOUR SERVERS</div><h2>Manage a server</h2></div><button class="secondary">＋ Add Server</button></div>
+<div class="servers">${['Prime Community','Free Fire Arena','Nobita Hub'].map((s,i)=>`<button class="card server ${i===0?'sel':''}" onclick="this.classList.toggle('sel')"><div class="avatar">${s[0]}</div><div><b>${s}</b><small>${['8.4K','3.1K','1.8K'][i]} members</small></div><div class="health"><i></i>${['99.9%','99.7%','100%'][i]}</div></button>`).join('')}</div>
+<div class="grid2"><section class="card panel"><div class="head"><div><div class="eyebrow">SECURITY PULSE</div><h3>Protection activity</h3></div><span class="pill">LIVE</span></div><div class="chart"><div class="chart-lines"></div><svg viewBox="0 0 700 210" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-opacity=".25"/><stop offset="1" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 175 C55 165 70 140 120 150 S190 102 230 128 S290 87 335 113 S400 48 440 94 S510 75 550 98 S615 38 700 57 L700 210 L0 210Z"></path><path class="line" d="M0 175 C55 165 70 140 120 150 S190 102 230 128 S290 87 335 113 S400 48 440 94 S510 75 550 98 S615 38 700 57"></path></svg><div class="labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></div><div class="chartfoot"><span>● Events blocked</span><b>1,284</b><span class="up">↑ 18.4%</span></div></section>
+<section class="card panel"><div class="eyebrow">QUICK CONTROLS</div><h3>Server protection</h3>${toggle('AntiNuke','Protect server changes',true)}${toggle('AntiRaid','Block join raids',true)}${toggle('AutoMod','Filter harmful messages',true)}${toggle('Verification','Secure new members',false)}<button class="save" onclick="this.textContent='✓ Saved successfully'">Save changes　↗</button></section></div>
+<section class="card developer"><img class="devpic" src="${photo}"><div><div class="eyebrow">THE DEVELOPER</div><h2>Built by <span class="grad">Nobita</span>.</h2><p>AURA is engineered to keep communities protected without slowing them down. Fast responses, clean controls and a dashboard that feels as sharp as the bot itself.</p><div class="tags"><span>🛡 Security first</span><span>⚡ Performance focused</span><span>✦ Crafted with care</span></div></div><div class="bigN">N</div></section></div>`;
+}
+function toggle(a,b,on){return `<div class="toggle"><div><b>${a}</b><small>${b}</small></div><button class="switch ${on?'on':''}" onclick="this.classList.toggle('on')"><span></span></button></div>`}
+function section(){
+if(current==='Settings') return `<div class="page"><div class="pagehead"><div class="eyebrow">SYSTEM</div><h1>Settings</h1><p>Dashboard preferences and secure connection status.</p></div><div class="settings"><section class="card panel"><div class="eyebrow">CONNECTION</div><h3>Discord Integration</h3><div class="settingrow"><div><b>Bot connection</b><small>Dashboard API is ready to connect</small></div><span class="pill">ONLINE</span></div><div class="settingrow"><div><b>Developer</b><small>Nobita</small></div><span>✓</span></div><div class="notice">🔐 Never place your Discord bot token inside this HTML file or any client-side JavaScript.</div></section><section class="card panel"><div class="eyebrow">PREFERENCES</div><h3>Interface</h3>${toggle('Animations','Smooth dashboard motion',true)}${toggle('Glass effects','Blurred premium panels',true)}${toggle('Notifications','Show dashboard alerts',true)}</section></div></div>`;
+let list=commands[current]||commands.Commands;
+return `<div class="page"><div class="pagehead"><div class="eyebrow">CONTROL CENTER</div><h1>${current}</h1><p>Manage AURA features and explore available commands.</p></div><div class="toolbar"><div class="search">⌕ <input id="search" placeholder="Search commands..." oninput="filterCmd(this.value)"></div></div><div id="cmdgrid" class="cmdgrid">${cmdgroup(current,list)}</div></div>`;
+}
+function cmdgroup(name,list){return `<section class="card cmdgroup"><div class="cmdhead"><div class="cmdico">${({Security:'🛡',Automod:'◉',Verification:'🔒',Moderation:'⚔',Commands:'⌘'})[name]||'✦'}</div><div><b>${name}</b><small>${list.length} commands available</small></div></div>${list.map(c=>`<button class="cmd" onclick="this.nextElementSibling.classList.toggle('details')"><span>/${c}</span><span>›</span></button><div class="details" style="display:none"><code>/${c}</code><p>AURA ${name.toLowerCase()} command. Configure and use it from your Discord server.</p></div>`).join('')}</section>`}
+function filterCmd(q){q=q.toLowerCase();let list=(commands[current]||commands.Commands).filter(x=>x.toLowerCase().includes(q));document.getElementById('cmdgrid').innerHTML=cmdgroup(current,list)}
+function render(){document.getElementById('app').innerHTML=current==='Overview'?overview():section();document.getElementById('app').insertAdjacentHTML('beforeend',`<footer><span>© 2026 AURA</span><span>Built with precision by <b>Nobita</b></span><span>v1.0.0 • Online</span></footer>`)}
+function toggleSide(){document.getElementById('side').classList.toggle('open')}
+function showToast(){let t=document.getElementById('toast');t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2200)}
+renderNav();render();
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
